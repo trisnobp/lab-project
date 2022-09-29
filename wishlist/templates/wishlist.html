@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h5>Nama: </h5>
-<p>{{nama}}</p>
+
+<nav class="navbar bg-light">
+    <div class="container-fluid">
+        <a class="btn btn-secondary" href="{% url 'wishlist:logout' %}" role="button">Logout</a>
+        <span class="navbar-text">
+            <p>{{nama}}</p>
+        </span>
+    </div>
+</nav>
 
 <table>
     <tr>
@@ -21,7 +28,5 @@
 </table>
 
 <h5>Sesi terakhir login: {{ last_login }}</h5>
-
-<button><a href="{% url 'wishlist:logout' %}">Logout</a></button>
 
 {% endblock content %}
