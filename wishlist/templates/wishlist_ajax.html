@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+<head>
+    <title>Ajax GET</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    </script>
+
+</head>
+
+{% block content %}
+
+<nav class="navbar bg-light">
+    <div class="container-fluid">
+        <a class="btn btn-secondary" href="{% url 'wishlist:logout' %}" role="button">Logout</a>
+        <a class="btn btn-secondary" href="{% url 'wishlist:tambah_wishlist' %}" role="button">Tambah Wishlist</a>
+        <span class="navbar-text">
+            <p>{{nama}}</p>
+        </span>
+    </div>
+</nav>
+
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td>Nama barang: </td>
+            <td><input type="text" name="nama_barang" class="form-control"></td>
+        </tr>
+                
+        <tr>
+            <td>Harga barang: </td>
+            <td><input type="text" name="harga_barang" class="form-control"></td>
+        </tr>
+
+        <tr>
+            <td>Deskripsi: </td>
+            <td><input type="text" name="deskripsi" class="form-control"></td>
+        </tr>
+
+
+        <tr>
+            <td></td>
+            <td><input class="btn login_btn" type="submit" value="Tambah Barang"></td>
+        </tr>
+    </table>
+</form>
+
+<table id="table"></table>
+
+<script>
+    async function getWishlist() {
+        return fetch("{% url 'json_show_wishlist' %}").then((res) => res.json())
+    }
+
+    async function refreshWishlist() {
+        document.getElementById('table').innerHTML = ""
+        const wishlist = await getWishlist()
+        let htmlString = '<tr><th>Nama Barang</th><th>Harga Barang</th><th>Deskripsi</th> '
+        
+        wishlist.forEach(element => {
+            htmlString += '<tr><th>${element.fields.nama_barang}</th><th>${element.fields.harga_barang}</th><th>${element.fields.deskripsi}</th></tr>'
+        });
+        
+        document.getElementById('table').innerHTML = htmlString
+    }  
+
+    function addWishlist() {
+        fetch("{% url 'tambah_wishlist' %}", {
+            method: 'POST',
+            body: new FormData(document.querySelector('#form'))
+        }).then(refreshWishlist)
+        return false
+    }
+
+    document.getElementById('button').onclick = addWishlist
+    refreshWishlist()
+</script>
+
+{% endblock content %}
