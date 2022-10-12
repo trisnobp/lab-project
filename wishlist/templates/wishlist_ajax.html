@@ -1,79 +1,87 @@
 {% extends 'base.html' %}
-
-<head>
-    <title>Ajax GET</title>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    </script>
-
-</head>
-
 {% block content %}
 
 <nav class="navbar bg-light">
     <div class="container-fluid">
         <a class="btn btn-secondary" href="{% url 'wishlist:logout' %}" role="button">Logout</a>
-        <a class="btn btn-secondary" href="{% url 'wishlist:tambah_wishlist' %}" role="button">Tambah Wishlist</a>
         <span class="navbar-text">
             <p>{{nama}}</p>
         </span>
     </div>
 </nav>
 
-<form method="POST">
+<form id="submit_wishlist" method="POST">
     {% csrf_token %}
     <table>
         <tr>
             <td>Nama barang: </td>
-            <td><input type="text" name="nama_barang" class="form-control"></td>
+            <td><input type="text" id="nama_barang" class="form-control"></td>
         </tr>
                 
         <tr>
             <td>Harga barang: </td>
-            <td><input type="text" name="harga_barang" class="form-control"></td>
+            <td><input type="text" id="harga_barang" class="form-control"></td>
         </tr>
 
         <tr>
             <td>Deskripsi: </td>
-            <td><input type="text" name="deskripsi" class="form-control"></td>
+            <td><input type="text" id="deskripsi" class="form-control"></td>
         </tr>
 
 
         <tr>
             <td></td>
-            <td><input class="btn login_btn" type="submit" value="Tambah Barang"></td>
+            <td><button type="submit">Tambah Barang</button></td>
         </tr>
     </table>
 </form>
 
-<table id="table"></table>
+<table id = "myTable">
+    <thead>    
+        <tr>
+            <th>Nama Barang</th>
+            <th>Harga Barang</th>
+            <th>Deskripsi</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
 
-<script>
-    async function getWishlist() {
-        return fetch("{% url 'json_show_wishlist' %}").then((res) => res.json())
-    }
+<script type="text/javascript">
+    $.getJSON("{% url 'wishlist:json_show_wishlist' %}", function(data) {
+        console.log("bisaa cuyyy")
+        $(data).each(function(key, value) {
+            $("#myTable > tbody").append($("<tr>")
+                .append($("<td>").append(value.fields.nama_barang))
+                .append($("<td>").append(value.fields.harga_barang))
+                .append($("<td>").append(value.fields.deskripsi)));
+        })
+    })
 
-    async function refreshWishlist() {
-        document.getElementById('table').innerHTML = ""
-        const wishlist = await getWishlist()
-        let htmlString = '<tr><th>Nama Barang</th><th>Harga Barang</th><th>Deskripsi</th> '
-        
-        wishlist.forEach(element => {
-            htmlString += '<tr><th>${element.fields.nama_barang}</th><th>${element.fields.harga_barang}</th><th>${element.fields.deskripsi}</th></tr>'
-        });
-        
-        document.getElementById('table').innerHTML = htmlString
-    }  
-
-    function addWishlist() {
-        fetch("{% url 'tambah_wishlist' %}", {
-            method: 'POST',
-            body: new FormData(document.querySelector('#form'))
-        }).then(refreshWishlist)
-        return false
-    }
-
-    document.getElementById('button').onclick = addWishlist
-    refreshWishlist()
+    $(document).on('submit', '#submit_wishlist', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type:"POST",
+            url: "{% url 'wishlist:tambah_wishlist' %}",
+            dataType: 'json',
+            data: {
+                nama_barang: $("#nama_barang").val(),
+                harga_barang: $("#harga_barang").val(),
+                deskripsi: $("#deskripsi").val(),
+                csrfmiddlewaretoken:'{{ csrf_token }}',
+            },
+            success: function(response) {
+                console.log("bisaa cuyy")
+                alert('Sukses cuy');
+                window.location.reload();
+            },
+        });  
+        $("#myTable > tbody").append($("<tr>")
+            .append($("<td>").append($("#nama_barang").val()))
+            .append($("<td>").append($("#harga_barang").val()))
+            .append($("<td>").append($("#deskripsi").val())));
+    });
+    
 </script>
 
 {% endblock content %}
